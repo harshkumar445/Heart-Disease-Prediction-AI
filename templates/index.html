@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart Disease Prediction</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            border: none;
+            background: transparent;
+            font-size: 1em;
+        }
+        
+        .tab:hover {
+            background: #e9ecef;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 40px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9ff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-area:hover {
+            background: #e8ecff;
+            border-color: #764ba2;
+        }
+        
+        .upload-area input[type="file"] {
+            display: none;
+        }
+        
+        .upload-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+        
+        .upload-text {
+            font-size: 1.1em;
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .upload-hint {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        
+        .info-box {
+            background: #e8f4f8;
+            border-left: 4px solid #2196F3;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        
+        .info-box h3 {
+            color: #1976D2;
+            margin-bottom: 10px;
+        }
+        
+        .info-box ul {
+            margin-left: 20px;
+            color: #555;
+        }
+        
+        .feature-badge {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+        
+        .file-preview {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .file-preview.show {
+            display: block;
+        }
+        
+        .file-preview img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🫀 Heart Disease Prediction System</h1>
+            <p>AI-Powered Analysis with OCR & ECG Recognition</p>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="openTab(event, 'manual')">
+                📝 Manual Input
+            </button>
+            <button class="tab" onclick="openTab(event, 'text-file')">
+                📄 Text Report
+            </button>
+            <button class="tab" onclick="openTab(event, 'ocr')">
+                🖼️ OCR Image <span class="feature-badge">NEW</span>
+            </button>
+            <button class="tab" onclick="openTab(event, 'ecg')">
+                📈 ECG Graph <span class="feature-badge">NEW</span>
+            </button>
+        </div>
+        
+        <!-- Manual Input Tab -->
+        <div id="manual" class="tab-content active">
+            <h2 style="margin-bottom: 25px;">Enter Patient Information Manually</h2>
+            <form action="/predict" method="POST">
+                <input type="hidden" name="action" value="manual">
+                
+                <div class="grid">
+                    <div class="form-group">
+                        <label>Age</label>
+                        <input type="number" name="age" required min="1" max="120" value="50">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Gender</label>
+                        <select name="sex" required>
+                            <option value="1">Male</option>
+                            <option value="0">Female</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Chest Pain Type</label>
+                        <select name="cp" required>
+                            <option value="0">Asymptomatic</option>
+                            <option value="1">Atypical Angina</option>
+                            <option value="2">Non-Anginal Pain</option>
+                            <option value="3">Typical Angina</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Resting Blood Pressure (mm Hg)</label>
+                        <input type="number" name="trestbps" required min="80" max="200" value="120">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Cholesterol (mg/dl)</label>
+                        <input type="number" name="chol" required min="100" max="600" value="200">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Fasting Blood Sugar > 120 mg/dl</label>
+                        <select name="fbs" required>
+                            <option value="0">No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Resting ECG Results</label>
+                        <select name="restecg" required>
+                            <option value="0">Normal</option>
+                            <option value="1">ST-T Wave Abnormality</option>
+                            <option value="2">LV Hypertrophy</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Maximum Heart Rate</label>
+                        <input type="number" name="thalach" required min="60" max="220" value="150">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Exercise Induced Angina</label>
+                        <select name="exang" required>
+                            <option value="0">No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>ST Depression</label>
+                        <input type="number" name="oldpeak" step="0.1" required min="0" max="6" value="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>ST Slope</label>
+                        <select name="slope" required>
+                            <option value="0">Downsloping</option>
+                            <option value="1">Flat</option>
+                            <option value="2" selected>Upsloping</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Number of Major Vessels (0-3)</label>
+                        <input type="number" name="ca" required min="0" max="3" value="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Thalassemia</label>
+                        <select name="thal" required>
+                            <option value="1" selected>Normal</option>
+                            <option value="2">Fixed Defect</option>
+                            <option value="3">Reversible Defect</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <button type="submit" class="btn">🔍 Predict Heart Disease Risk</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Text File Upload Tab -->
+        <div id="text-file" class="tab-content">
+            <h2 style="margin-bottom: 25px;">Upload Medical Report (Text File)</h2>
+            
+            <div class="info-box">
+                <h3>ℹ️ Instructions</h3>
+                <ul>
+                    <li>Upload a text file (.txt) containing patient medical report</li>
+                    <li>AI will automatically extract relevant health parameters</li>
+                    <li>Supported formats: Plain text with medical data</li>
+                </ul>
+            </div>
+            
+            <form action="/predict" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="action" value="file">
+                
+                <label for="report_file" class="upload-area">
+                    <div class="upload-icon">📄</div>
+                    <div class="upload-text">Click to upload text report</div>
+                    <div class="upload-hint">Supported: .txt files</div>
+                    <input type="file" id="report_file" name="report_file" accept=".txt" required>
+                </label>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <button type="submit" class="btn">🤖 Analyze Report with AI</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- OCR Image Upload Tab -->
+        <div id="ocr" class="tab-content">
+            <h2 style="margin-bottom: 25px;">Upload Medical Report Image (OCR)</h2>
+            
+            <div class="info-box">
+                <h3>🖼️ OCR Image Recognition</h3>
+                <ul>
+                    <li>Upload a clear image of a medical report or lab results</li>
+                    <li>AI will use OCR to extract text and analyze medical data</li>
+                    <li>Supported formats: JPG, PNG, JPEG, BMP</li>
+                    <li>For best results, ensure the image is well-lit and text is readable</li>
+                </ul>
+            </div>
+            
+            <form action="/predict" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="action" value="ocr_image">
+                
+                <label for="ocr_image" class="upload-area">
+                    <div class="upload-icon">🖼️</div>
+                    <div class="upload-text">Click to upload medical report image</div>
+                    <div class="upload-hint">Supported: JPG, PNG, JPEG, BMP</div>
+                    <input type="file" id="ocr_image" name="ocr_image" accept="image/*" required onchange="previewImage(this, 'ocrPreview')">
+                </label>
+                
+                <div id="ocrPreview" class="file-preview"></div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <button type="submit" class="btn">🔍 Extract & Analyze with OCR</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- ECG Graph Upload Tab -->
+        <div id="ecg" class="tab-content">
+            <h2 style="margin-bottom: 25px;">Upload ECG Graph Image</h2>
+            
+            <div class="info-box">
+                <h3>📈 ECG Graph Analysis</h3>
+                <ul>
+                    <li>Upload an ECG (Electrocardiogram) graph image</li>
+                    <li>AI will analyze the ECG pattern using GPT-4 Vision</li>
+                    <li>Automatically extracts: Heart rate, ST depression, ST slope, ECG abnormalities</li>
+                    <li>You can provide additional patient data below for more accurate prediction</li>
+                </ul>
+            </div>
+            
+            <form action="/predict" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="action" value="ecg_image">
+                
+                <label for="ecg_image" class="upload-area">
+                    <div class="upload-icon">📈</div>
+                    <div class="upload-text">Click to upload ECG graph</div>
+                    <div class="upload-hint">Supported: JPG, PNG, JPEG, BMP</div>
+                    <input type="file" id="ecg_image" name="ecg_image" accept="image/*" required onchange="previewImage(this, 'ecgPreview')">
+                </label>
+                
+                <div id="ecgPreview" class="file-preview"></div>
+                
+                <h3 style="margin-top: 30px; margin-bottom: 20px;">Optional: Additional Patient Information</h3>
+                
+                <div class="grid">
+                    <div class="form-group">
+                        <label>Age</label>
+                        <input type="number" name="age" min="1" max="120" value="50">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Gender</label>
+                        <select name="sex">
+                            <option value="1">Male</option>
+                            <option value="0">Female</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Chest Pain Type</label>
+                        <select name="cp">
+                            <option value="0">Asymptomatic</option>
+                            <option value="1">Atypical Angina</option>
+                            <option value="2">Non-Anginal Pain</option>
+                            <option value="3">Typical Angina</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Resting Blood Pressure</label>
+                        <input type="number" name="trestbps" min="80" max="200" value="130">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Cholesterol</label>
+                        <input type="number" name="chol" min="100" max="600" value="200">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Fasting Blood Sugar > 120</label>
+                        <select name="fbs">
+                            <option value="0">No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Exercise Induced Angina</label>
+                        <select name="exang">
+                            <option value="0">No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Number of Major Vessels</label>
+                        <input type="number" name="ca" min="0" max="3" value="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Thalassemia</label>
+                        <select name="thal">
+                            <option value="1" selected>Normal</option>
+                            <option value="2">Fixed Defect</option>
+                            <option value="3">Reversible Defect</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <button type="submit" class="btn">🫀 Analyze ECG & Predict Risk</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        function openTab(evt, tabName) {
+            var tabcontent = document.getElementsByClassName("tab-content");
+            for (var i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active");
+            }
+            
+            var tabs = document.getElementsByClassName("tab");
+            for (var i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove("active");
+            }
+            
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+        
+        function previewImage(input, previewId) {
+            const preview = document.getElementById(previewId);
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    preview.innerHTML = `
+                        <strong>📎 File selected:</strong> ${input.files[0].name}
+                        <br>
+                        <strong>📏 Size:</strong> ${(input.files[0].size / 1024).toFixed(2)} KB
+                        <img src="${e.target.result}" alt="Preview">
+                    `;
+                    preview.classList.add('show');
+                }
+                
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+</body>
+</html>
